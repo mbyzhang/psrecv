@@ -53,8 +53,10 @@ class ClockDataRecoverer():
             self.clk_recovery_grad_threshold
         )
 
-        # symbol_rising_edges = np.zeros(len(f1_f2_ratios), dtype=np.bool8)
-        # symbol_rising_edges[symbol_rising_edges_idxs] = True
+        # for debugging
+        symbol_rising_edges = np.zeros(len(f1_f2_ratios), dtype=np.bool8)
+        symbol_rising_edges[symbol_rising_edges_idxs] = True
+        self.symbol_rising_edges = symbol_rising_edges
         
         self.symbol_phase, symbols_soft = clock_recovery(
             sig=f1_f2_ratios, 

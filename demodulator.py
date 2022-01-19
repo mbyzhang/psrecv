@@ -27,6 +27,9 @@ class Demodulator():
         self.f1_symbol_lpf = StatefulConvolver(symbol_lpf_taps)
         self.f2_symbol_lpf = StatefulConvolver(symbol_lpf_taps)
 
+        self.frag_f1_amp = None
+        self.frag_f2_amp = None
+
         self.eps = eps
     
     def accept(self, fragment: np.ndarray) -> np.ndarray:
@@ -47,6 +50,10 @@ class Demodulator():
         # bg_amp_db = np.log10(bg_amp) * 10.0
         # f1_snr_db = np.log10(f1_amp) * 10.0 - bg_amp_db
         # f2_snr_db = np.log10(f2_amp) * 10.0 - bg_amp_db
+
+        # for debugging
+        self.frag_f1_amp = frag_f1_amp
+        self.frag_f2_amp = frag_f2_amp
 
         eps = 1e-6 
         # It seems adding a eps to the signal can also solve the noise problem when there are no transmission signal. 
