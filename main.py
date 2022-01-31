@@ -44,6 +44,7 @@ if __name__ == "__main__":
             sps=sps,
             clk_recovery_window=sps // 4,
             clk_recovery_grad_threshold=0.03,
+            median_window_size=int(sps * 0.8)
         )
 
         deframer = Deframer()
