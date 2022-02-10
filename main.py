@@ -2,6 +2,7 @@
 
 import numpy as np
 import logging
+import argparse
 
 from cdr import ClockDataRecoverer
 from deframer import Deframer
@@ -17,13 +18,28 @@ def process_block(data: np.ndarray, demodulator: Demodulator, cdr: ClockDataReco
     for frame in frames:
         print(frame)
 
-if __name__ == "__main__":
-    block_size = 4096
-    filename = "../Samples/100bps_frame.wav"
-    baudrate = 100
+def parse_args():
+    parser = argparse.ArgumentParser(description='PSRecv')
+    parser.add_argument("-d", "--device", help="Audio input device name")
+    parser.add_argument("-i", "--input", help="Input audio file name")
+    parser.add_argument("-b", "--baudrate", help="Baudrate", default=100, type=int)
+    parser.add_argument("-r", "--sample-rate", help="Sample rate", default=48000, type=int)
+    parser.add_argument("--block-size", help="Block size", default=4096, type=int)
+    args = parser.parse_args()
+    return args
 
-    # source = SoundFileSource(filename, block_size)
-    source = AudioRecordingDeviceSource(block_size=block_size)
+if __name__ == "__main__":
+    args = parse_args()
+    block_size = args.block_size
+    baudrate = args.baudrate
+
+    if args.input:
+        filename = args.input
+        source = SoundFileSource(filename, block_size=block_size)
+    else:
+        device = args.device
+        sample_rate = args.sample_rate
+        source = AudioRecordingDeviceSource(device, fs=sample_rate, block_size=block_size)
 
     with source:
         fs = source.fs
@@ -44,6 +60,7 @@ if __name__ == "__main__":
             sps=sps,
             clk_recovery_window=sps // 4,
             clk_recovery_grad_threshold=0.03,
+            median_window_size=int(sps * 0.8)
         )
 
         deframer = Deframer()

@@ -11,7 +11,7 @@ def symbol_rising_edge_detect(ratios, window_size, grad_threshold):
 
     return symbol_rising_edges_idxs
 
-def clock_recovery(sig, symbol_rising_edges_idxs, sps, phase=0.0, phase_initial=0.0, alpha=0.002):
+def clock_recovery(sig, symbol_rising_edges_idxs, sps, phase=0.0, phase_initial=0.0, alpha=0.002, median_window_size=1):
     def phase_diff(a, b):
         return (a - b + np.pi) % (np.pi * 2.0) - np.pi
 
@@ -21,7 +21,12 @@ def clock_recovery(sig, symbol_rising_edges_idxs, sps, phase=0.0, phase_initial=
     def get_symbols(phase, sps, lower, upper):
         start = ((phase - phase_initial) * r + sps // 2 - lower) % sps + lower
         symbol_idxs = np.arange(start=start, stop=upper, step=sps, dtype=int)
-        return sig[symbol_idxs]
+        symbols = np.zeros(len(symbol_idxs), dtype=float)
+        for i, symbol_idx in enumerate(symbol_idxs):
+            start = max(0, symbol_idx - median_window_size // 2)
+            end = symbol_idx + median_window_size // 2 + 1
+            symbols[i] = np.median(sig[start:end])
+        return symbols
     
     next_idx = len(sig) if len(symbol_rising_edges_idxs) == 0 else symbol_rising_edges_idxs[0]
     symbols = np.concatenate((symbols, get_symbols(phase, sps, 0, next_idx)))
@@ -39,12 +44,13 @@ def clock_recovery(sig, symbol_rising_edges_idxs, sps, phase=0.0, phase_initial=
     return phase, symbols
 
 class ClockDataRecoverer():
-    def __init__(self, sps, clk_recovery_window, clk_recovery_grad_threshold=0.03):
+    def __init__(self, sps, clk_recovery_window, clk_recovery_grad_threshold=0.03, median_window_size=1):
         self.sps = sps
         self.clk_recovery_window = clk_recovery_window
         self.clk_recovery_grad_threshold = clk_recovery_grad_threshold
         self.symbol_phase = 0.0
         self.first_symbol_offset = 0
+        self.median_window_size = median_window_size
 
     def accept(self, f1_f2_ratios):
         symbol_rising_edges_idxs = symbol_rising_edge_detect(
@@ -64,7 +70,8 @@ class ClockDataRecoverer():
             sps=self.sps, 
             phase=self.symbol_phase, 
             phase_initial=self.first_symbol_offset / self.sps * np.pi * 2.0,
-            alpha=0.1
+            alpha=0.1,
+            median_window_size=self.median_window_size,
         )
 
         self.first_symbol_offset += len(f1_f2_ratios)
