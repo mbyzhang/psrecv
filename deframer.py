@@ -46,7 +46,7 @@ class Deframer():
                 if len(self.symbols) == 0:
                     break
                 corr = signal.correlate(np.where(self.symbols, 1, -1), np.where(Deframer.SFD_SYMBOL, 1, -1))
-                sfd_ends_idx = np.where(corr == 10)[0]
+                sfd_ends_idx = np.where(corr >= 9)[0]
                 
                 if len(sfd_ends_idx) > 0:
                     logger.debug(f"Found SFD ending at {sfd_ends_idx}")
@@ -71,6 +71,11 @@ class Deframer():
                 except Exception as e:
                     self.rs_buffer.erase_pos.append(len(self.rs_buffer.buf))
                     logger.warning(e)
+                    if len(self.rs_buffer.erase_pos) > self.rs_buffer.len_parity:
+                        logging.warning("Stop receiving early due to too many errors")
+                        self.state = self.StateType.SEARCHING
+                        self.rs_buffer = None
+                        break
                 
                 self.rs_buffer.buf.append(byte)
                 
