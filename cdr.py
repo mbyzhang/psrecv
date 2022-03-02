@@ -77,6 +77,6 @@ class ClockDataRecoverer():
         self.first_symbol_offset += len(f1_f2_ratios)
         self.first_symbol_offset %= self.sps
 
-        symbols_hard = np.where(symbols_soft >= 0, False, True)
+        symbols_hard = np.where(symbols_soft >= 0, True, False)
 
         return symbols_hard

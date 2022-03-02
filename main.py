@@ -47,8 +47,8 @@ if __name__ == "__main__":
 
         demodulator = Demodulator(
             fs=fs,
+            f0=3200,
             f1=3000,
-            f2=3200,
             f_delta=100,
             carrier_bandpass_ntaps=1229,
             symbol_lpf_cutoff_freq=1100,
