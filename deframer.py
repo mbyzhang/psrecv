@@ -23,6 +23,10 @@ class Deframer():
         IN_HEADER = 1
         IN_PAYLOAD = 2
 
+    class FormatType(Enum):
+        STANDARD = 0
+        RAW_PAYLOAD = 1
+
     @dataclass
     class RSBuffer:
         len_target: int = 0
@@ -30,10 +34,11 @@ class Deframer():
         buf: bytearray = field(default_factory=bytearray)
         erase_pos: List[int] = field(default_factory=list)
 
-    def __init__(self, payload_parity_len_ratio=0.2):
+    def __init__(self, payload_parity_len_ratio=0.2, format: FormatType = FormatType.STANDARD):
         self.payload_parity_len_ratio = payload_parity_len_ratio
         self.symbols = np.array([], dtype=bool)
         self.state = Deframer.StateType.SEARCHING
+        self.format = format
         self.rs_buffer = self.RSBuffer()
 
     def accept(self, symbols_in: np.ndarray) -> List[bytearray]:
@@ -56,7 +61,7 @@ class Deframer():
                     self.rs_buffer = self.RSBuffer(len_target=3, len_parity=2)
                 else:
                     break
-            elif self.state in (Deframer.StateType.IN_HEADER, Deframer.StateType.IN_PAYLOAD):
+            elif self.state == Deframer.StateType.IN_HEADER or (self.state == self.StateType.IN_PAYLOAD and self.format == self.FormatType.STANDARD):
                 if len(self.symbols) < 10:
                     break
                 symbol, self.symbols = np_bin_array_to_int(self.symbols[:10]), self.symbols[10:]
@@ -96,10 +101,14 @@ class Deframer():
                         len_parity = math.ceil(payload_decoded_len * self.payload_parity_len_ratio)
 
                         self.state = self.StateType.IN_PAYLOAD
-                        self.rs_buffer = self.RSBuffer(
-                            len_parity=len_parity,
-                            len_target=payload_decoded_len + len_parity
-                        )
+
+                        if self.format == self.FormatType.STANDARD:
+                            self.rs_buffer = self.RSBuffer(
+                                len_parity=len_parity,
+                                len_target=payload_decoded_len + len_parity
+                            )
+                        else:
+                            self.rs_buffer = self.RSBuffer(len_target=payload_decoded_len)
 
                         logging.info(f"Receiving message with length {payload_decoded_len}")
 
@@ -109,6 +118,22 @@ class Deframer():
                         self.rs_buffer = None
 
                         logging.info(f"Received message {buf_decoded}")
+            elif self.state == self.StateType.IN_PAYLOAD and self.format == self.FormatType.RAW_PAYLOAD:
+                if len(self.symbols) < 8:
+                    break
+                symbol, self.symbols = np.packbits(self.symbols[:8], bitorder='little')[0], self.symbols[8:]
+                buf = self.rs_buffer.buf
+                buf.append(symbol)
+                logger.debug(f"Got byte 0x{symbol:02x}")
+
+                if len(buf) == self.rs_buffer.len_target:
+                    out.append(buf)
+
+                    self.state = self.StateType.SEARCHING
+                    self.rs_buffer = None
+                    logging.info(f"Received raw message {buf}")
+            else:
+                assert False
         
         self.symbols = self.symbols[-Deframer.SYMBOLS_KEEP_LENGTH:]
         return out
