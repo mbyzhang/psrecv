@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
 
-import numpy as np
 import logging
 import argparse
 
-from cdr import ClockDataRecoverer
-from deframer import Deframer
-from demodulator import Demodulator
-from audioio import AudioRecordingDeviceSource, SoundFileSource
+from modules.transformers import Sequential
+from modules.transformers.cdr import SimpleCDR
+from modules.transformers.framing import Deframer
+from modules.transformers.demodulators import BFSKDemodulator
+from modules.io import SoundDeviceSource, SoundFileSource
 
 logging.basicConfig(level=logging.INFO)
-
-def process_block(data: np.ndarray, demodulator: Demodulator, cdr: ClockDataRecoverer, deframer: Deframer):
-    f1_f2_ratios = demodulator.accept(data)
-    symbols = cdr.accept(f1_f2_ratios)
-    frames = deframer.accept(symbols)
-    for frame in frames:
-        print(frame)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='PSRecv')
@@ -39,33 +32,35 @@ if __name__ == "__main__":
     else:
         device = args.device
         sample_rate = args.sample_rate
-        source = AudioRecordingDeviceSource(device, fs=sample_rate, block_size=block_size)
+        source = SoundDeviceSource(device, fs=sample_rate, block_size=block_size)
 
     with source:
         fs = source.fs
         sps = fs // baudrate
 
-        demodulator = Demodulator(
-            fs=fs,
-            f0=3200,
-            f1=3000,
-            f_delta=100,
-            carrier_bandpass_ntaps=1229,
-            symbol_lpf_cutoff_freq=1100,
-            symbol_lpf_ntaps=405,
-            eps=1e-6,
+        pipeline = Sequential(
+            BFSKDemodulator(
+                fs=fs,
+                f0=3200,
+                f1=3000,
+                f_delta=100,
+                carrier_bandpass_ntaps=1229,
+                symbol_lpf_cutoff_freq=1100,
+                symbol_lpf_ntaps=405,
+                eps=1e-6,
+            ),
+            SimpleCDR(
+                sps=sps,
+                clk_recovery_window=sps // 4,
+                clk_recovery_grad_threshold=0.03,
+                median_window_size=int(sps * 0.8)
+            ),
+            Deframer(
+                format=Deframer.FormatType.STANDARD
+            )
         )
-
-        cdr = ClockDataRecoverer(
-            sps=sps,
-            clk_recovery_window=sps // 4,
-            clk_recovery_grad_threshold=0.03,
-            median_window_size=int(sps * 0.8)
-        )
-
-        deframer = Deframer()
 
         for block in source.stream:
-            # print(block)
-            process_block(block, demodulator, cdr, deframer)
-
+            frames = pipeline.accept(block)
+            for frame in frames:
+                print(frames)

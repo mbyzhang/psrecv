@@ -1,9 +1,10 @@
-from convolution import StatefulConvolver
+from modules.transformers.convolution import StatefulConvolution
 from scipy import signal
 
 import numpy as np
+import modules.transformers as transformers
 
-class Demodulator():
+class BFSKDemodulator(transformers.Transformer):
     def __init__(
         self, 
         fs=48000,
@@ -19,13 +20,13 @@ class Demodulator():
         f1_taps = signal.firwin(carrier_bandpass_ntaps, [f1 - f_delta, f1 + f_delta], fs=fs, pass_zero=False)
         # bg_taps = signal.firwin(carrier_bandpass_ntaps, [f0 - 5 * f_delta, f0 - 2 * f_delta, f1 + 2 * f_delta, f1 + 5 * f_delta], fs=fs, pass_zero=False)
 
-        self.f0_bpf = StatefulConvolver(f0_taps)
-        self.f1_bpf = StatefulConvolver(f1_taps)
+        self.f0_bpf = StatefulConvolution(f0_taps)
+        self.f1_bpf = StatefulConvolution(f1_taps)
         # self.bg_bpf = StatefulConvolver(bg_taps)
 
         symbol_lpf_taps = signal.firwin(symbol_lpf_ntaps, symbol_lpf_cutoff_freq, fs=fs)
-        self.f0_symbol_lpf = StatefulConvolver(symbol_lpf_taps)
-        self.f1_symbol_lpf = StatefulConvolver(symbol_lpf_taps)
+        self.f0_symbol_lpf = StatefulConvolution(symbol_lpf_taps)
+        self.f1_symbol_lpf = StatefulConvolution(symbol_lpf_taps)
 
         self.frag_f0_amp = None
         self.frag_f1_amp = None

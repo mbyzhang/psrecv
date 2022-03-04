@@ -1,4 +1,5 @@
 import numpy as np
+from modules.transformers import Transformer
 
 def symbol_rising_edge_detect(ratios, window_size, grad_threshold):
     zero_crossings = np.where(np.diff(np.sign(ratios)) > 0)[0]
@@ -43,7 +44,7 @@ def clock_recovery(sig, symbol_rising_edges_idxs, sps, phase=0.0, phase_initial=
         
     return phase, symbols
 
-class ClockDataRecoverer():
+class SimpleCDR(Transformer):
     def __init__(self, sps, clk_recovery_window, clk_recovery_grad_threshold=0.03, median_window_size=1):
         self.sps = sps
         self.clk_recovery_window = clk_recovery_window

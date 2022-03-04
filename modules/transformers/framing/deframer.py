@@ -1,21 +1,22 @@
-
-
 from dataclasses import dataclass, field
-from utils import int_to_bin, np_bin_array_to_int
 from scipy import signal
 from typing import List
 import numpy as np
 from enum import Enum
 from encdec8b10b import EncDec8B10B
 from reedsolo import RSCodec
+from modules.transformers import Transformer
 
 import logging
 import math
 
 logger = logging.getLogger(__name__)
 
-class Deframer():
-    SFD_SYMBOL = int_to_bin(EncDec8B10B.enc_8b10b(0x3c, 0, 1)[1])
+class Deframer(Transformer):
+    SFD_SYMBOL = np.unpackbits(
+        np.array([EncDec8B10B.enc_8b10b(0x3c, 0, 1)[1]], dtype='uint16').view('uint8'),
+        bitorder = 'little'
+    )[:10]
     SYMBOLS_KEEP_LENGTH = 10
 
     class StateType(Enum):
@@ -51,7 +52,7 @@ class Deframer():
                 if len(self.symbols) == 0:
                     break
                 corr = signal.correlate(np.where(self.symbols, 1, -1), np.where(Deframer.SFD_SYMBOL, 1, -1))
-                sfd_ends_idx = np.where(corr >= 9)[0]
+                sfd_ends_idx = np.where(corr >= 10)[0]
                 
                 if len(sfd_ends_idx) > 0:
                     logger.debug(f"Found SFD ending at {sfd_ends_idx}")
@@ -64,7 +65,7 @@ class Deframer():
             elif self.state == Deframer.StateType.IN_HEADER or (self.state == self.StateType.IN_PAYLOAD and self.format == self.FormatType.STANDARD):
                 if len(self.symbols) < 10:
                     break
-                symbol, self.symbols = np_bin_array_to_int(self.symbols[:10]), self.symbols[10:]
+                symbol, self.symbols = np.packbits(self.symbols[:10], bitorder='little').view('uint16').item(), self.symbols[10:]
                 logger.debug(f"Consumed word {symbol:03x}")
 
                 byte = 0xff
