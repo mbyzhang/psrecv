@@ -77,7 +77,7 @@ class Deframer():
                     self.rs_buffer.erase_pos.append(len(self.rs_buffer.buf))
                     logger.warning(e)
                     if len(self.rs_buffer.erase_pos) > self.rs_buffer.len_parity:
-                        logging.warning("Stop receiving early due to too many errors")
+                        logger.warning("Stop receiving early due to too many errors")
                         self.state = self.StateType.SEARCHING
                         self.rs_buffer = None
                         break
@@ -88,10 +88,10 @@ class Deframer():
                     rsc = RSCodec(self.rs_buffer.len_parity, fcr=1)
                     
                     try:
-                        logging.debug(f"Header: {self.rs_buffer}")
+                        logger.debug(f"Header: {self.rs_buffer}")
                         buf_decoded = rsc.decode(self.rs_buffer.buf, erase_pos=self.rs_buffer.erase_pos)[0]
                     except:
-                        logging.warning("Failed to decode frame due to too many errors")
+                        logger.warning("Failed to decode frame due to too many errors")
                         self.state = self.StateType.SEARCHING
                         self.rs_buffer = None
                     
@@ -110,14 +110,14 @@ class Deframer():
                         else:
                             self.rs_buffer = self.RSBuffer(len_target=payload_decoded_len)
 
-                        logging.info(f"Receiving message with length {payload_decoded_len}")
+                        logger.info(f"Receiving message with length {payload_decoded_len}")
 
                     elif self.state == self.StateType.IN_PAYLOAD:
                         out.append(buf_decoded)
                         self.state = self.StateType.SEARCHING
                         self.rs_buffer = None
 
-                        logging.info(f"Received message {buf_decoded}")
+                        logger.info(f"Received message {buf_decoded}")
             elif self.state == self.StateType.IN_PAYLOAD and self.format == self.FormatType.RAW_PAYLOAD:
                 if len(self.symbols) < 8:
                     break
@@ -131,7 +131,7 @@ class Deframer():
 
                     self.state = self.StateType.SEARCHING
                     self.rs_buffer = None
-                    logging.info(f"Received raw message {buf}")
+                    logger.info(f"Received raw message {buf}")
             else:
                 assert False
         
