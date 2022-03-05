@@ -42,7 +42,7 @@ class Deframer(Transformer):
         self.format = format
         self.rs_buffer = self.RSBuffer()
 
-    def accept(self, symbols_in: np.ndarray) -> List[bytearray]:
+    def accept(self, symbols_in: np.ndarray) -> List[bytes]:
         symbols_in = np.array(symbols_in, dtype=bool)
         self.symbols = np.concatenate((self.symbols, symbols_in))
         out = []
@@ -128,7 +128,7 @@ class Deframer(Transformer):
                 logger.debug(f"Got byte 0x{symbol:02x}")
 
                 if len(buf) == self.rs_buffer.len_target:
-                    out.append(buf)
+                    out.append(bytes(buf))
 
                     self.state = self.StateType.SEARCHING
                     self.rs_buffer = None
