@@ -38,5 +38,5 @@ class SimpleCDR(Transformer):
         self.first_symbol_offset %= self.sps
 
         symbols_hard = np.where(symbols_soft >= 0, True, False)
-
+        self.symbols_hard = symbols_hard
         return symbols_hard
