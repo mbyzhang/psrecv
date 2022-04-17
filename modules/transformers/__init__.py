@@ -3,3 +3,4 @@ class Transformer():
         raise NotImplementedError()
 
 from .sequential import Sequential
+from .bitunpacking import BitUnpacking
