@@ -1,5 +1,5 @@
 class Transformer():
-    def accept(data = None):
+    def accept(self, data = None):
         raise NotImplementedError()
 
 from .sequential import Sequential
