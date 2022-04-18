@@ -2,17 +2,18 @@
 
 import logging
 import argparse
+import importlib
+import sys
 
-from modules.transformers import Sequential
-from modules.transformers.cdr import SimpleCDR
-from modules.transformers.framing import Deframer
-from modules.transformers.demodulators import BFSKDemodulator
 from modules.io import SoundDeviceSource, SoundFileSource
 
 logging.basicConfig(level=logging.INFO)
 
+logger = logging.getLogger()
+
 def parse_args():
     parser = argparse.ArgumentParser(description='PSRecv')
+    parser.add_argument("-p", "--profile", help="Profile", default="bfsk_3khz")
     parser.add_argument("-d", "--device", help="Audio input device name")
     parser.add_argument("-i", "--input", help="Input audio file name")
     parser.add_argument("-b", "--baudrate", help="Baudrate", default=100, type=int)
@@ -34,31 +35,16 @@ if __name__ == "__main__":
         sample_rate = args.sample_rate
         source = SoundDeviceSource(device, fs=sample_rate, block_size=block_size)
 
+    fs = source.fs
+    sps = fs // baudrate
+
+    try:
+        pipeline = importlib.import_module("." + args.profile, "profiles").get_pipeline(fs, sps)
+    except Exception as e:
+        logger.critical(f"Cannot load {args.profile} profile: {e}")
+        sys.exit(1)
+
     with source:
-        fs = source.fs
-        sps = fs // baudrate
-
-        pipeline = Sequential(
-            BFSKDemodulator(
-                fs=fs,
-                f0=3200,
-                f1=3000,
-                f_delta=100,
-                carrier_bandpass_ntaps=1229,
-                symbol_lpf_cutoff_freq=1100,
-                symbol_lpf_ntaps=405,
-            ),
-            SimpleCDR(
-                sps=sps,
-                clk_recovery_window=sps // 4,
-                clk_recovery_grad_threshold=0.03,
-                median_window_size=int(sps * 0.8)
-            ),
-            Deframer(
-                format=Deframer.FormatType.STANDARD
-            )
-        )
-
         for block in source.stream:
             frames = pipeline(block)
             for frame in frames:
