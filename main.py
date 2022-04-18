@@ -47,7 +47,6 @@ if __name__ == "__main__":
                 carrier_bandpass_ntaps=1229,
                 symbol_lpf_cutoff_freq=1100,
                 symbol_lpf_ntaps=405,
-                eps=1e-6,
             ),
             SimpleCDR(
                 sps=sps,
