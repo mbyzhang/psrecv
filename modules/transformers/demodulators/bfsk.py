@@ -72,15 +72,16 @@ class BFSKDemodulator(transformers.Transformer):
 
         frag_f0_amp = self.am_demod_f0(fragment)
         frag_f1_amp = self.am_demod_f1(fragment)
+        frag_f1_f0_diff = frag_f1_amp - frag_f0_amp
 
         # for debugging
         self.frag_f0_amp = frag_f0_amp
         self.frag_f1_amp = frag_f1_amp
+        self.frag_f1_f0_diff = frag_f1_f0_diff
 
         eps = 1e-6 
         # It seems adding a eps to the signal can also solve the noise problem when there are no transmission signal. 
         # But this may have problems if the transmission signal is small
-        frag_f1_f0_ratios = (np.log10(frag_f1_amp + eps) - np.log10(frag_f0_amp + eps)) * 10.0 # * signal.convolve(frag_f0_active | frag_f1_active, sig_det_lpf_taps, mode="same")
+        # frag_f1_f0_ratios = (np.log10(frag_f1_amp + eps) - np.log10(frag_f0_amp + eps)) * 10.0 # * signal.convolve(frag_f0_active | frag_f1_active, sig_det_lpf_taps, mode="same")
 
-        self.frag_f1_f0_ratios = frag_f1_f0_ratios
-        return frag_f1_f0_ratios
+        return frag_f1_f0_diff
