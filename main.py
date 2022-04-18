@@ -48,4 +48,4 @@ if __name__ == "__main__":
         for block in source.stream:
             frames = pipeline(block)
             for frame in frames:
-                print(frames)
+                logger.info(f"< {frame}")
