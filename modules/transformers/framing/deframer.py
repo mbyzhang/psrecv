@@ -42,7 +42,7 @@ class Deframer(Transformer):
         self.format = format
         self.rs_buffer = self.RSBuffer()
 
-    def accept(self, symbols_in: np.ndarray) -> List[bytes]:
+    def __call__(self, symbols_in: np.ndarray) -> List[bytes]:
         symbols_in = np.array(symbols_in, dtype=bool)
         self.symbols = np.concatenate((self.symbols, symbols_in))
         out = []

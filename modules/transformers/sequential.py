@@ -7,5 +7,5 @@ class Sequential(Transformer):
         super().__init__()
         self.children = args
 
-    def accept(self, data = None):
-        return functools.reduce(lambda v, e: e.accept(v), self.children, data)
+    def __call__(self, data = None):
+        return functools.reduce(lambda v, e: e(v), self.children, data)

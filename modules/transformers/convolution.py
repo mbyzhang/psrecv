@@ -9,7 +9,7 @@ class StatefulConvolution(Transformer): # for processing continuous signal in ch
         self.fir_filter = fir_filter
         self.ntaps = len(fir_filter)
     
-    def accept(self, sample):
+    def __call__(self, sample):
         return self.convolve(sample)
     # PRECONDITION: len(sample) >= self.ntaps - 1
     def convolve(self, sample):

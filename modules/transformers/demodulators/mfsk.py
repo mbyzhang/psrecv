@@ -27,9 +27,9 @@ class MFSKDemodulator(Transformer):
         self.eps = eps
         self.frag_fi_envelope = None
 
-    def accept(self, fragment: np.ndarray) -> np.ndarray:
+    def __call__(self, fragment: np.ndarray) -> np.ndarray:
         frag_fi_envelope = np.array([
-            am_demod.accept(fragment) for am_demod in self.am_demods
+            am_demod(fragment) for am_demod in self.am_demods
         ], copy=False)
 
         # for debugging

@@ -51,7 +51,7 @@ class BFSKDemodulator(transformers.Transformer):
 
         self.eps = eps
     
-    def accept(self, fragment: np.ndarray) -> np.ndarray:
+    def __call__(self, fragment: np.ndarray) -> np.ndarray:
         # frag_f0_sig = self.f0_bpf.convolve(fragment)
         # frag_f1_sig = self.f1_bpf.convolve(fragment)
         # frag_bg_sig = self.bg_bpf.convolve(fragment)
@@ -70,8 +70,8 @@ class BFSKDemodulator(transformers.Transformer):
         # f0_snr_db = np.log10(f0_amp) * 10.0 - bg_amp_db
         # f1_snr_db = np.log10(f1_amp) * 10.0 - bg_amp_db
 
-        frag_f0_amp = self.am_demod_f0.accept(fragment)
-        frag_f1_amp = self.am_demod_f1.accept(fragment)
+        frag_f0_amp = self.am_demod_f0(fragment)
+        frag_f1_amp = self.am_demod_f1(fragment)
 
         # for debugging
         self.frag_f0_amp = frag_f0_amp

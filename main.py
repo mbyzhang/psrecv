@@ -61,6 +61,6 @@ if __name__ == "__main__":
         )
 
         for block in source.stream:
-            frames = pipeline.accept(block)
+            frames = pipeline(block)
             for frame in frames:
                 print(frames)

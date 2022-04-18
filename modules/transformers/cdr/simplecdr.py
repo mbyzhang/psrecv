@@ -12,7 +12,7 @@ class SimpleCDR(Transformer):
         self.first_symbol_offset = 0
         self.median_window_size = median_window_size
 
-    def accept(self, f1_f2_ratios):
+    def __call__(self, f1_f2_ratios):
         symbol_rising_edges_idxs = symbol_rising_edge_detect(
             f1_f2_ratios, 
             self.clk_recovery_window, 

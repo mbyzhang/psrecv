@@ -21,7 +21,7 @@ class AMDemodulator(transformers.Transformer):
         self.carrier_filter = StatefulConvolution(carrier_taps)
         self.lowpass_filter = StatefulConvolution(lowpass_taps)
     
-    def accept(self, data: np.ndarray) -> np.ndarray:
-        carrier_signal = self.carrier_filter.convolve(data)
-        amplitudes = self.lowpass_filter.convolve(np.abs(carrier_signal) ** 2)
+    def __call__(self, data: np.ndarray) -> np.ndarray:
+        carrier_signal = self.carrier_filter(data)
+        amplitudes = self.lowpass_filter(np.abs(carrier_signal) ** 2)
         return amplitudes
