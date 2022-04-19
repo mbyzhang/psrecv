@@ -1,4 +1,4 @@
-from modules.transformers.convolution import StatefulConvolution
+from modules.transformers.filters import FIRFilter
 from scipy import signal
 
 import numpy as np
@@ -15,12 +15,20 @@ class AMDemodulator(transformers.Transformer):
     ) -> None:
         super().__init__()
 
-        carrier_taps = signal.firwin(carrier_bandpass_ntaps, carrier_bandpass_cutoff, fs=fs, pass_zero=False)
-        lowpass_taps = signal.firwin(lowpass_ntaps, lowpass_cutoff, fs=fs)
+        self.carrier_filter = FIRFilter(
+            fs=fs,
+            cutoff=carrier_bandpass_cutoff,
+            ntaps=carrier_bandpass_ntaps,
+            pass_zero=False
+        )
 
-        self.carrier_filter = StatefulConvolution(carrier_taps)
-        self.lowpass_filter = StatefulConvolution(lowpass_taps)
-    
+        self.lowpass_filter = FIRFilter(
+            fs=fs,
+            cutoff=lowpass_cutoff,
+            ntaps=lowpass_ntaps,
+            pass_zero=True
+        )
+
     def __call__(self, data: np.ndarray) -> np.ndarray:
         carrier_signal = self.carrier_filter(data)
         amplitudes = self.lowpass_filter(np.abs(carrier_signal) ** 2)
