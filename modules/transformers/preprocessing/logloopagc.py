@@ -30,7 +30,7 @@ class LogLoopAGC(transformers.Transformer):
         for idx, chunk in zip(chunk_indices, chunks):
             power = np.mean(np.abs(chunk) ** 2)
             if np.isnan(power):
-                out[idx:idx + self.update_period] = 0.0
+                out[idx:idx + self.update_period] = np.nan
                 gain_new = self.gain * self.decay_step_size
                 frag_gain_interp[idx:idx + self.update_period] = np.linspace(self.gain, gain_new, len(chunk))
                 self.gain = gain_new
