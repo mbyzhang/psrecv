@@ -2,23 +2,17 @@ from scipy import signal
 from modules.transformers import Transformer
 import numpy as np
 
-class StatefulConvolution(Transformer): # for processing continuous signal in chunks. Any better ways?
+class StatefulConvolution(Transformer):
     def __init__(self, fir_filter):
         super().__init__()
-        self.last_sample = None
         self.fir_filter = fir_filter
         self.ntaps = len(fir_filter)
-    
-    def __call__(self, sample):
-        return self.convolve(sample)
-    # PRECONDITION: len(sample) >= self.ntaps - 1
+        self.padding = np.zeros(self.ntaps - 1)
+
+    def __call__(self, data: np.ndarray) -> np.ndarray:
+        return self.convolve(data)
+
     def convolve(self, sample):
-        if self.last_sample is None:
-            self.last_sample = np.zeros(len(sample))
-        
-        # assert len(self.last_sample) >= self.ntaps - 1
-        
-        padding = self.last_sample[-self.ntaps + 1:]
-        x = np.concatenate((padding, sample))
-        self.last_sample = sample
+        x = np.concatenate((self.padding, sample))
+        self.padding = x[-self.ntaps + 1:]
         return signal.convolve(x, self.fir_filter, mode='valid')
