@@ -22,10 +22,15 @@ class DCBlocker(transformers.Transformer):
         else:
             raise ValueError(f"Unsupported mode: {mode}")
 
-        self.zi = signal.lfiltic(self.b, self.a, [])
-        self.z = self.zi
+        self.order = max(len(self.a), len(self.b))
+
+        self.z = None
 
     def __call__(self, data: np.ndarray) -> np.ndarray:
+        if self.z is None:
+            self.z = np.empty(data.shape[:-1] + (self.order - 1,))
+            self.z[..., :] = signal.lfiltic(self.b, self.a, [])
+
         out, self.z = signal.lfilter(self.b, self.a, np.nan_to_num(data), zi=self.z)
         out = np.where(np.isnan(data), np.nan, out)
         self.frag_out = out
