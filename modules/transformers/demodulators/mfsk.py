@@ -12,7 +12,6 @@ class MFSKDemodulator(Transformer):
         carrier_bandpass_ntaps=1229,
         symbol_lpf_cutoff_freq=1100,
         symbol_lpf_ntaps=405,
-        eps=1e-6,
     ):
         self.am_demods = [
             AMDemodulator(
@@ -24,8 +23,8 @@ class MFSKDemodulator(Transformer):
             ) for f in freqs
         ]
 
-        self.eps = eps
         self.frag_fi_envelope = None
+        self.frag_diff = None
 
     def __call__(self, fragment: np.ndarray) -> np.ndarray:
         frag_fi_envelope = np.array([
@@ -34,4 +33,12 @@ class MFSKDemodulator(Transformer):
 
         # for debugging
         self.frag_fi_envelope = frag_fi_envelope
-        return frag_fi_envelope + self.eps
+
+        diff = []
+        for i, envelope in enumerate(frag_fi_envelope):
+            diff.append(envelope - np.sum(np.delete(frag_fi_envelope, i, axis=0), axis=0))
+
+        diff = np.array(diff, copy=False)
+
+        self.frag_diff = diff
+        return diff
