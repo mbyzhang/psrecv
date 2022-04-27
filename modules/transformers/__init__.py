@@ -6,3 +6,4 @@ from .sequential import Sequential
 from .bitunpacking import BitUnpacking
 from .auxdatacollector import AuxDataCollector
 from .identity import Identity
+from .delay import Delay
