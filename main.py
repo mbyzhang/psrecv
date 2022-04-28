@@ -13,7 +13,7 @@ logger = logging.getLogger()
 
 def parse_args():
     parser = argparse.ArgumentParser(description='PSRecv')
-    parser.add_argument("-p", "--profile", help="Profile", default="bfsk_3khz")
+    parser.add_argument("-p", "--profile", help="Profile", default="bfsk")
     parser.add_argument("-d", "--device", help="Audio input device name")
     parser.add_argument("-i", "--input", help="Input audio file name")
     parser.add_argument("-b", "--baudrate", help="Baudrate", default=100, type=int)
