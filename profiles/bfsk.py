@@ -30,10 +30,6 @@ def get_pipeline(
             symbol_lpf_cutoff_freq=1100,
             symbol_lpf_ntaps=405,
         ),
-        DCBlocker(
-            s=sps * 20,
-            mode="ma"
-        ),
         get_cdr_deframer_block(
             sps=sps,
             cdr_type="simple",
