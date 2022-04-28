@@ -1,0 +1,6 @@
+numpy
+scipy
+sounddevice
+soundfile
+reedsolo
+encdec8b10b
