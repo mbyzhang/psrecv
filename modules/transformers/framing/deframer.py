@@ -51,13 +51,13 @@ class Deframer(Transformer):
             if self.state == Deframer.StateType.SEARCHING:
                 if len(self.symbols) == 0:
                     break
-                corr = signal.correlate(np.where(self.symbols, 1, -1), np.where(Deframer.SFD_SYMBOL, 1, -1))
-                sfd_ends_idx = np.where(corr >= 10)[0]
+                corr = signal.correlate(np.where(self.symbols, 1, -1), np.where(Deframer.SFD_SYMBOL, 1, -1), mode="valid")
+                sfd_ends_idx = np.where(corr >= 8)[0]
                 
                 if len(sfd_ends_idx) > 0:
-                    logger.debug(f"Found SFD ending at {sfd_ends_idx}")
+                    logger.debug(f"Found SFD starting at {sfd_ends_idx}")
 
-                    self.symbols = self.symbols[sfd_ends_idx[0] + 1:]
+                    self.symbols = self.symbols[sfd_ends_idx[0] + 10:]
                     self.state = Deframer.StateType.IN_HEADER
                     self.rs_buffer = self.RSBuffer(len_target=3, len_parity=2)
                 else:
