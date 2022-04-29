@@ -24,4 +24,5 @@ class SoundFileSource(SoundSource):
         pass
 
     def __del__(self):
-        self.__file.close()
+        if hasattr(self, "__file"):
+            self.__file.close()
