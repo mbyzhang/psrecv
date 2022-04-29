@@ -101,17 +101,23 @@ class Deframer(Transformer):
                         payload_decoded_len = buf_decoded[0]
                         len_parity = math.ceil(payload_decoded_len * self.payload_parity_len_ratio)
 
-                        self.state = self.StateType.IN_PAYLOAD
-
-                        if self.format == self.FormatType.STANDARD:
-                            self.rs_buffer = self.RSBuffer(
-                                len_parity=len_parity,
-                                len_target=payload_decoded_len + len_parity
-                            )
+                        if payload_decoded_len == 0:
+                            out.append(b"")
+                            self.state = self.StateType.SEARCHING
+                            self.rs_buffer = None
+                            logger.info("Received an empty message")
                         else:
-                            self.rs_buffer = self.RSBuffer(len_target=payload_decoded_len)
+                            self.state = self.StateType.IN_PAYLOAD
 
-                        logger.info(f"Receiving message with length {payload_decoded_len}")
+                            if self.format == self.FormatType.STANDARD:
+                                self.rs_buffer = self.RSBuffer(
+                                    len_parity=len_parity,
+                                    len_target=payload_decoded_len + len_parity
+                                )
+                            else:
+                                self.rs_buffer = self.RSBuffer(len_target=payload_decoded_len)
+
+                            logger.info(f"Receiving message with length {payload_decoded_len}")
 
                     elif self.state == self.StateType.IN_PAYLOAD:
                         out.append(buf_decoded)
