@@ -31,7 +31,14 @@ def plot_statistics(pipeline, fs: float, baudrate: float, start: float, end: flo
     for x in np.where(pipeline.cum_data["symbol_rising_edges"] == 1)[0]:
         plt.axvline(x=x, c="red", alpha=0.5, lw=0.5)
 
+    if "subcarrier_rela_amp_dc_blocked" in pipeline.cum_data:
+        subcarrier_rela_amp_dc_blocked = pipeline.cum_data["subcarrier_rela_amp_dc_blocked"]
+        if subcarrier_rela_amp_dc_blocked.ndim == 1:
+            plt.plot(subcarrier_rela_amp_dc_blocked, label="DC-blocked relative amplitude")
+
     plt.xlim(start * fs, end * fs)
+    # plt.ylim((-1.5, 1.5))
+    plt.axhline(y=0.0, color="yellow")
     plt.legend()
     plt.grid(True)
 
