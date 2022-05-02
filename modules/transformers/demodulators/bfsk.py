@@ -13,6 +13,7 @@ class BFSKDemodulator(transformers.Transformer):
         carrier_bandpass_ntaps=1229, 
         symbol_lpf_cutoff_freq=1100,
         symbol_lpf_ntaps=405,
+        mode="diff", # diff or ratio
     ):
         self.am_demod_f0 = AMDemodulator(
             fs=fs,
@@ -33,11 +34,17 @@ class BFSKDemodulator(transformers.Transformer):
         self.frag_f0_amp = None
         self.frag_f1_amp = None
         self.frag_f1_f0_diff = None
+        self.mode = mode
 
     def __call__(self, fragment: np.ndarray) -> np.ndarray:
         frag_f0_amp = self.am_demod_f0(fragment)
         frag_f1_amp = self.am_demod_f1(fragment)
-        frag_f1_f0_diff = frag_f1_amp - frag_f0_amp
+
+        if self.mode == "diff":
+            frag_f1_f0_diff = frag_f1_amp - frag_f0_amp
+        else:
+            eps = 1e-6
+            frag_f1_f0_diff = (np.log10(frag_f1_amp + eps) - np.log10(frag_f0_amp + eps)) * 10.0
 
         # for debugging
         self.frag_f0_amp = frag_f0_amp
