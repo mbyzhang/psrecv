@@ -3,8 +3,9 @@ from typing import List, Literal
 from modules.transformers import Sequential
 from modules.transformers.demodulators import MFSKDemodulator
 from modules.transformers.filters import DCBlocker
+from modules.transformers.preprocessing import GeneralPreprocessor
 
-from .common import get_cdr_deframer_block, get_preprocessing_block
+from .common import get_cdr_deframer_block
 
 import math
 
@@ -19,10 +20,11 @@ def get_pipeline(
     assert math.log2(n_freqs).is_integer() and n_freqs >= 2, "MFSK only supports power-of-two and at-least-two carrier frequencies"
 
     return Sequential(
-        get_preprocessing_block(
+        GeneralPreprocessor(
             fs=fs,
             carrier_freqs=carrier_freqs,
             carrier_f_delta=carrier_f_delta,
+            det_snr_threshold_db=6.0,
         ),
         MFSKDemodulator(
             fs=fs,
