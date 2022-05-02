@@ -15,7 +15,11 @@ class CarrierDetectorExtractor(Transformer):
         ema_alpha=0.7,
     ) -> None:
         super().__init__()
-        carrier_min_f, carrier_max_f = min(carrier_cutoff), max(carrier_cutoff)
+        carrier_cutoff = np.array(carrier_cutoff, dtype=float)
+        self.carrier_span = np.sum(carrier_cutoff[1::2] - carrier_cutoff[0::2])
+        carrier_min_f = min(carrier_cutoff)
+        carrier_max_f = max(carrier_cutoff)
+        self.noise_span = noise_delta * 2
 
         self.carrier_filter = FIRFilter(fs=fs, cutoff=carrier_cutoff, ntaps=ntaps, pass_zero=False)
 
@@ -47,8 +51,9 @@ class CarrierDetectorExtractor(Transformer):
         for idx, chunk in zip(chunk_indices, chunks):
             carrier = self.carrier_filter(chunk)
             noise = self.noise_filter(chunk)
-
-            snr_db = 10 * (np.log10(np.mean(np.abs(carrier) ** 2)) - np.log10(np.mean(np.abs(noise) ** 2)))
+            carrier_energy = np.mean(np.abs(carrier) ** 2)
+            noise_energy = np.mean(np.abs(noise) ** 2)
+            snr_db = 10 * (np.log10(carrier_energy) - np.log10(noise_energy / self.noise_span * self.carrier_span))
             snr_db = self.snr_lpf(snr_db)
 
             frag_snr_db[idx:idx + self.update_period] = snr_db
