@@ -1,3 +1,4 @@
+from typing import Optional
 from modules import transformers
 
 import numpy as np
@@ -21,7 +22,7 @@ class LogLoopAGC(transformers.Transformer):
         self.step_size = step_size
         self.decay_step_size = decay_step_size
 
-    def __call__(self, data: np.ndarray) -> np.ndarray:
+    def __call__(self, data: np.ndarray, target: Optional[np.ndarray] = None) -> np.ndarray:
         chunk_indices = np.arange(start=0, stop=len(data), step=self.update_period)
         chunks = np.split(data, chunk_indices[1:])
         out = np.empty(len(data))
@@ -44,4 +45,8 @@ class LogLoopAGC(transformers.Transformer):
                 self.gain = gain_new
 
         self.frag_gain_interp = frag_gain_interp
-        return out
+
+        if target is not None:
+            return target * (10 ** (frag_gain_interp / 10.0))
+        else:
+            return out
