@@ -1,7 +1,7 @@
-from modules.transformers import Transformer
+from dsp import DSPBlock
 
-class Sequential(Transformer):
-    def __init__(self, *args: Transformer) -> None:
+class Sequential(DSPBlock):
+    def __init__(self, *args: DSPBlock) -> None:
         super().__init__()
         self.children = args
         self.outputs = [None] * len(self.children)

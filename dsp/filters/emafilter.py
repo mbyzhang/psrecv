@@ -1,7 +1,7 @@
-from modules import transformers
+from dsp import DSPBlock
 
 # Expoential moving average filter
-class EMAFilter(transformers.Transformer):
+class EMAFilter(DSPBlock):
     def __init__(
         self,
         alpha=0.99,

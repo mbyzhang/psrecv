@@ -1,10 +1,10 @@
 from typing import Callable, Dict, List
-from modules.transformers import Transformer
+from dsp import DSPBlock
 
 import numpy as np
 
-class AuxDataCollector(Transformer):
-    def __init__(self, block: Transformer, fields: Dict[str, Callable[[], np.ndarray]]) -> None:
+class AuxDataCollector(DSPBlock):
+    def __init__(self, block: DSPBlock, fields: Dict[str, Callable[[], np.ndarray]]) -> None:
         super().__init__()
         self.fields = fields
         self.block = block

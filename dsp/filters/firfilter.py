@@ -1,10 +1,10 @@
-from modules.transformers.convolution import StatefulConvolution
-from modules import transformers
+from dsp.convolution import StatefulConvolution
+from dsp import DSPBlock
 from scipy import signal
 
 import numpy as np
 
-class FIRFilter(transformers.Transformer):
+class FIRFilter(DSPBlock):
     def __init__(
         self,
         fs,

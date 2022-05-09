@@ -1,10 +1,10 @@
 from typing import Optional
-from modules import transformers
+from dsp import DSPBlock
 
 import numpy as np
 
 # Logarithmic-Loop AGC
-class LogLoopAGC(transformers.Transformer):
+class LogLoopAGC(DSPBlock):
     def __init__(
         self,
         update_period = 512,

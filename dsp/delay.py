@@ -1,7 +1,7 @@
-from modules.transformers import Transformer
+from dsp import DSPBlock
 import numpy as np
 
-class Delay(Transformer):
+class Delay(DSPBlock):
     def __init__(self, n):
         super().__init__()
         self.n = n

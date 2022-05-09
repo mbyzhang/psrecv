@@ -1,8 +1,8 @@
 from scipy import signal
-from modules.transformers import Transformer
+from dsp import DSPBlock
 import numpy as np
 
-class StatefulConvolution(Transformer):
+class StatefulConvolution(DSPBlock):
     def __init__(self, fir_filter):
         super().__init__()
         self.fir_filter = fir_filter

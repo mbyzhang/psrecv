@@ -1,9 +1,9 @@
-from modules.transformers import Transformer
-from modules.transformers.filters import FIRFilter
+from dsp import DSPBlock
+from dsp.filters import FIRFilter
 
 import numpy as np
 
-class Decimator(Transformer):
+class Decimator(DSPBlock):
     def __init__(self, down=8) -> None:
         super().__init__()
 

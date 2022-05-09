@@ -1,10 +1,10 @@
-from modules.transformers.filters import FIRFilter
+from dsp.filters import FIRFilter
+from dsp import DSPBlock
 from scipy import signal
 
 import numpy as np
-from modules import transformers
 
-class AMDemodulator(transformers.Transformer):
+class AMDemodulator(DSPBlock):
     def __init__(
         self, 
         fs,

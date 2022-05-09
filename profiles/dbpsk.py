@@ -1,8 +1,8 @@
 from typing import List, Literal
 
-from modules.transformers import Sequential
-from modules.transformers.demodulators import DBPSKDemodulator
-from modules.transformers.preprocessing import GeneralPreprocessor
+from dsp import Sequential
+from dsp.demodulators import DBPSKDemodulator
+from dsp.preprocessing import GeneralPreprocessor
 
 from .common import get_cdr_deframer_block
 

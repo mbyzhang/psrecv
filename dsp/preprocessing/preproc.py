@@ -1,10 +1,10 @@
-from modules.transformers import Transformer
+from dsp import DSPBlock
 from .carrierdetext import CarrierDetectorExtractor
 from .logloopagc import LogLoopAGC
 
 import numpy as np
 
-class GeneralPreprocessor(Transformer):
+class GeneralPreprocessor(DSPBlock):
     def __init__(self,
         fs,
         carrier_freqs,

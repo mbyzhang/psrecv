@@ -1,10 +1,10 @@
-from modules.transformers import Transformer
-from modules.transformers.filters import FIRFilter
+from dsp import DSPBlock
+from dsp.filters import FIRFilter
 
 import numpy as np
 
 # Order-2 Costas loop
-class CostasLoop(Transformer):
+class CostasLoop(DSPBlock):
     def __init__(
         self,
         f,

@@ -5,14 +5,14 @@ import numpy as np
 from enum import Enum
 from encdec8b10b import EncDec8B10B
 from reedsolo import RSCodec
-from modules.transformers import Transformer
+from dsp import DSPBlock
 
 import logging
 import math
 
 logger = logging.getLogger(__name__)
 
-class Deframer(Transformer):
+class Deframer(DSPBlock):
     SFD_SYMBOL = np.unpackbits(
         np.array([EncDec8B10B.enc_8b10b(0x3c, 0, 1)[1]], dtype='uint16').view('uint8'),
         bitorder = 'little'

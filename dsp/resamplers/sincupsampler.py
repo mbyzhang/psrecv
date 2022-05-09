@@ -1,10 +1,10 @@
-from modules.transformers import Transformer
-from modules.transformers.convolution import StatefulConvolution
+from dsp import DSPBlock
+from dsp.convolution import StatefulConvolution
 
 import numpy as np
 from scipy import signal
 
-class SincUpsampler(Transformer):
+class SincUpsampler(DSPBlock):
     def __init__(self, up=8, ntaps=49, window='hann') -> None:
         super().__init__()
         self.up = up

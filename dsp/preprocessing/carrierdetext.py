@@ -1,9 +1,9 @@
-from modules.transformers import Transformer
-from modules.transformers.filters import FIRFilter, EMAFilter
+from dsp import DSPBlock
+from dsp.filters import FIRFilter, EMAFilter
 
 import numpy as np
 
-class CarrierDetectorExtractor(Transformer):
+class CarrierDetectorExtractor(DSPBlock):
     def __init__(
         self,
         fs,

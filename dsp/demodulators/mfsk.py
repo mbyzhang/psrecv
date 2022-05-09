@@ -1,9 +1,9 @@
-from modules.transformers.demodulators.am import AMDemodulator
-from modules.transformers import Transformer
+from dsp.demodulators.am import AMDemodulator
+from dsp import DSPBlock
 
 import numpy as np
 
-class MFSKDemodulator(Transformer):
+class MFSKDemodulator(DSPBlock):
     def __init__(
         self,
         fs=48000,

@@ -1,7 +1,7 @@
 import numpy as np
-from modules.transformers import Transformer
+from dsp import DSPBlock
 
-class BitUnpacking(Transformer):
+class BitUnpacking(DSPBlock):
     def __init__(self, count=8) -> None:
         self.count = count
         super().__init__()

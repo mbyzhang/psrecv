@@ -1,8 +1,8 @@
 from typing import Literal
 
-from modules.transformers import Sequential, BitUnpacking, Transformer
-from modules.transformers.cdr import SimpleCDR, MulticarrierCDR
-from modules.transformers.framing import Deframer
+from dsp import Sequential, BitUnpacking, DSPBlock
+from dsp.cdr import SimpleCDR, MulticarrierCDR
+from dsp.framing import Deframer
 
 def get_cdr_deframer_block(
     sps,
@@ -10,7 +10,7 @@ def get_cdr_deframer_block(
     n_ary: int = 2,
     frame_format: Literal["standard", "raw_payload"] = "standard",
     frame_ecc_level: float = 0.2
-) -> Transformer:
+) -> DSPBlock:
     try:
         frame_format_enum = {
             "standard": Deframer.FormatType.STANDARD,

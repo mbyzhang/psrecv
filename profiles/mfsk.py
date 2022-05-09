@@ -1,9 +1,9 @@
 from typing import List, Literal
 
-from modules.transformers import Sequential
-from modules.transformers.demodulators import MFSKDemodulator
-from modules.transformers.filters import DCBlocker
-from modules.transformers.preprocessing import GeneralPreprocessor
+from dsp import Sequential
+from dsp.demodulators import MFSKDemodulator
+from dsp.filters import DCBlocker
+from dsp.preprocessing import GeneralPreprocessor
 
 from .common import get_cdr_deframer_block
 

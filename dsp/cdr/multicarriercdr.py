@@ -1,9 +1,9 @@
 import numpy as np
-from modules.transformers import Transformer
+from dsp import DSPBlock
 
 from .common import symbol_rising_edge_detect, clock_recovery
 
-class MulticarrierCDR(Transformer):
+class MulticarrierCDR(DSPBlock):
     def __init__(self, sps, clk_recovery_window, clk_recovery_grad_threshold=0.03, median_window_size=1):
         self.sps = sps
         self.clk_recovery_window = clk_recovery_window

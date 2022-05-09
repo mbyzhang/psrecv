@@ -1,11 +1,11 @@
-from modules.transformers import Transformer, Delay
-from modules.transformers.filters import FIRFilter
-from modules.transformers.resamplers import Decimator, SincUpsampler
-from modules.transformers.pll import CostasLoop
+from dsp import DSPBlock, Delay
+from dsp.filters import FIRFilter
+from dsp.resamplers import Decimator, SincUpsampler
+from dsp.pll import CostasLoop
 
 import numpy as np
 
-class DBPSKDemodulator(Transformer):
+class DBPSKDemodulator(DSPBlock):
     def __init__(
         self,
         fs,

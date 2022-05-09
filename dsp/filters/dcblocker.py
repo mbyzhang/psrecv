@@ -1,10 +1,10 @@
 from typing import Literal
-from modules import transformers
+from dsp import DSPBlock
 from scipy import signal
 
 import numpy as np
 
-class DCBlocker(transformers.Transformer):
+class DCBlocker(DSPBlock):
     def __init__(
         self,
         p: float = 0.995,

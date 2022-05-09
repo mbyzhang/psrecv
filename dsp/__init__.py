@@ -1,4 +1,4 @@
-class Transformer():
+class DSPBlock():
     def __call__(self, data = None):
         raise NotImplementedError()
 
