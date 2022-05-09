@@ -3,7 +3,7 @@ from dsp import DSPBlock
 
 import numpy as np
 
-class AuxDataCollector(DSPBlock):
+class StatisticsCollector(DSPBlock):
     def __init__(self, block: DSPBlock, fields: Dict[str, Callable[[], np.ndarray]]) -> None:
         super().__init__()
         self.fields = fields
