@@ -1,0 +1,57 @@
+from modules.transformers import Transformer, Delay
+from modules.transformers.filters import FIRFilter
+from modules.transformers.resamplers import Decimator, SincUpsampler
+from modules.transformers.pll import CostasLoop
+
+import numpy as np
+
+class DBPSKDemodulator(Transformer):
+    def __init__(
+        self,
+        fs,
+        sps,
+        f,
+        f_delta=100,
+        carrier_bandpass_ntaps=1229,
+        costas_lpf_ntaps=405,
+        resampler_up=8,
+    ) -> None:
+        super().__init__()
+        fs_r = fs * resampler_up
+        self.resampler_up = resampler_up
+
+        self.upsampler = SincUpsampler(up=resampler_up)
+
+        self.carrier_filter = FIRFilter(
+            fs=fs,
+            cutoff=[f - f_delta, f + f_delta],
+            ntaps=carrier_bandpass_ntaps,
+            pass_zero=False
+        )
+
+        self.loop = CostasLoop(
+            f=f,
+            fs=fs_r,
+            update_period=int(fs_r / f * 5),
+            alpha=0.6,
+            beta=0.0001,
+            lpf_cutoff=f / 2.0,
+            lpf_ntaps=costas_lpf_ntaps,
+        )
+
+        self.decimator = Decimator(down=resampler_up)
+
+        self.symbol_delay = Delay(sps)
+
+    def __call__(self, data: np.ndarray) -> np.ndarray:
+        carrier = self.carrier_filter(data)
+        carrier_up = self.upsampler(carrier)
+        phase_abs_up = self.loop(carrier_up)
+        phase_abs = self.decimator(phase_abs_up)
+        phase_rela = phase_abs * self.symbol_delay(phase_abs) * -1.0
+
+        self.stat_carrier = carrier
+        self.stat_phase_abs = phase_abs
+        self.stat_phase_rela = phase_rela
+
+        return phase_rela
