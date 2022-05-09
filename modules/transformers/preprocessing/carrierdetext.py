@@ -8,8 +8,9 @@ class CarrierDetectorExtractor(Transformer):
         self,
         fs,
         carrier_cutoff,
-        noise_delta,
+        noise_delta, # noise bandwidth
         ntaps,
+        noise_guard_bw=100.0, # guard bandwidth
         update_period=512,
         snr_threshold_db=6,
         ema_alpha=0.7,
@@ -26,10 +27,10 @@ class CarrierDetectorExtractor(Transformer):
         self.noise_filter = FIRFilter(
             fs=fs, 
             cutoff=[
-                carrier_min_f - noise_delta, 
-                carrier_min_f,
-                carrier_max_f,
-                carrier_max_f + noise_delta
+                carrier_min_f - noise_guard_bw - noise_delta,
+                carrier_min_f - noise_guard_bw,
+                carrier_max_f + noise_guard_bw,
+                carrier_max_f + noise_guard_bw + noise_delta
             ],
             ntaps=ntaps,
             pass_zero=False
