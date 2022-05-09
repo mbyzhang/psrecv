@@ -12,7 +12,8 @@ def get_pipeline(
     sps: int,
     carrier_freqs: List[float] = [3000.0, 3200.0],
     carrier_f_delta: float = 100.0,
-    frame_format: Literal["standard", "payload_no_ecc", "payload_no_ecc_lc"] = "standard"
+    frame_format: Literal["standard", "raw_payload"] = "standard",
+    frame_ecc_level: float = 0.2,
 ):
     assert len(carrier_freqs) == 2, "BFSK only supports two carrier frequencies"
 
@@ -41,5 +42,6 @@ def get_pipeline(
             sps=sps,
             cdr_type="simple",
             frame_format=frame_format,
+            frame_ecc_level=frame_ecc_level,
         )
     )

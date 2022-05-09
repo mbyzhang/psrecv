@@ -8,13 +8,13 @@ def get_cdr_deframer_block(
     sps,
     cdr_type: Literal["simple", "multicarrier"] = "simple",
     n_ary: int = 2,
-    frame_format: Literal["standard", "payload_no_ecc", "payload_no_ecc_lc"] = "standard"
+    frame_format: Literal["standard", "raw_payload"] = "standard",
+    frame_ecc_level: float = 0.2
 ) -> Transformer:
     try:
         frame_format_enum = {
             "standard": Deframer.FormatType.STANDARD,
-            "payload_no_ecc": None,
-            "payload_no_ecc_lc": Deframer.FormatType.RAW_PAYLOAD,
+            "raw_payload": Deframer.FormatType.RAW_PAYLOAD,
         }[frame_format]
     except KeyError:
         raise ValueError(f"Unsupported frame format: {frame_format}")
@@ -28,7 +28,8 @@ def get_cdr_deframer_block(
                 median_window_size=int(sps * 0.8)
             ),
             Deframer(
-                format=frame_format_enum
+                format=frame_format_enum,
+                payload_parity_len_ratio=frame_ecc_level,
             )
         )
     elif cdr_type == "multicarrier":
@@ -43,7 +44,8 @@ def get_cdr_deframer_block(
                 count=n_ary
             ),
             Deframer(
-                format=frame_format_enum
+                format=frame_format_enum,
+                payload_parity_len_ratio=frame_ecc_level,
             )
         )
     else:

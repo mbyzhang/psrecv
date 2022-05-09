@@ -14,7 +14,8 @@ def get_pipeline(
     sps: int,
     carrier_freqs: List[float] = [3000.0, 3200.0, 3600.0, 3400.0],
     carrier_f_delta: float = 100.0,
-    frame_format: Literal["standard", "payload_no_ecc", "payload_no_ecc_lc"] = "standard"
+    frame_format: Literal["standard", "raw_payload"] = "standard",
+    frame_ecc_level: float = 0.2,
 ):
     n_freqs = len(carrier_freqs)
     assert math.log2(n_freqs).is_integer() and n_freqs >= 2, "MFSK only supports power-of-two and at-least-two carrier frequencies"
@@ -39,5 +40,6 @@ def get_pipeline(
             cdr_type="multicarrier",
             n_ary=int(math.log2(n_freqs)),
             frame_format=frame_format,
+            frame_ecc_level=frame_ecc_level,
         )
     )

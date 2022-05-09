@@ -26,7 +26,7 @@ class Deframer(Transformer):
 
     class FormatType(Enum):
         STANDARD = 0
-        RAW_PAYLOAD = 1
+        RAW_PAYLOAD = 1 # payload without line coding
 
     @dataclass
     class RSBuffer:
@@ -62,40 +62,51 @@ class Deframer(Transformer):
                     self.rs_buffer = self.RSBuffer(len_target=3, len_parity=2)
                 else:
                     break
-            elif self.state == Deframer.StateType.IN_HEADER or (self.state == self.StateType.IN_PAYLOAD and self.format == self.FormatType.STANDARD):
-                if len(self.symbols) < 10:
-                    break
-                symbol, self.symbols = np.packbits(self.symbols[:10], bitorder='little').view('uint16').item(), self.symbols[10:]
-                logger.debug(f"Consumed word {symbol:03x}")
-
+            else: # IN_HEADER or IN_PAYLOAD
                 byte = 0xff
-                try:
-                    ctrl, byte = EncDec8B10B.dec_8b10b(symbol)
-                    if ctrl:
-                        byte = 0xff
-                        raise Exception(f"Unexpected control word: {byte:02x}")
-                except Exception as e:
-                    self.rs_buffer.erase_pos.append(len(self.rs_buffer.buf))
-                    logger.warning(e)
-                    if len(self.rs_buffer.erase_pos) > self.rs_buffer.len_parity:
-                        logger.warning("Stop receiving early due to too many errors")
-                        self.state = self.StateType.SEARCHING
-                        self.rs_buffer = None
+                if self.state == Deframer.StateType.IN_HEADER or self.format == Deframer.FormatType.STANDARD:
+                    if len(self.symbols) < 10:
                         break
-                
+                    symbol, self.symbols = np.packbits(self.symbols[:10], bitorder='little').view('uint16').item(), self.symbols[10:]
+                    logger.debug(f"Consumed word {symbol:03x}")
+
+                    byte = 0xff
+                    try:
+                        ctrl, byte = EncDec8B10B.dec_8b10b(symbol)
+                        if ctrl:
+                            byte = 0xff
+                            raise Exception(f"Unexpected control word: {byte:02x}")
+                    except Exception as e:
+                        self.rs_buffer.erase_pos.append(len(self.rs_buffer.buf))
+                        logger.warning(e)
+                        if len(self.rs_buffer.erase_pos) > self.rs_buffer.len_parity:
+                            logger.warning("Stop receiving early due to too many errors")
+                            self.state = self.StateType.SEARCHING
+                            self.rs_buffer = None
+                            continue
+                else: # IN_PAYLOAD and RAW_PAYLOAD
+                    if len(self.symbols) < 8:
+                        break
+                    byte, self.symbols = np.packbits(self.symbols[:8], bitorder='little').item(), self.symbols[8:]
+                    logger.debug(f"Consumed raw byte {byte:02x}")
+                    
                 self.rs_buffer.buf.append(byte)
                 
                 if len(self.rs_buffer.buf) == self.rs_buffer.len_target:
-                    rsc = RSCodec(self.rs_buffer.len_parity, fcr=1)
-                    
-                    try:
-                        logger.debug(f"Header: {self.rs_buffer}")
-                        buf_decoded = rsc.decode(self.rs_buffer.buf, erase_pos=self.rs_buffer.erase_pos)[0]
-                    except:
-                        logger.warning("Failed to decode frame due to too many errors")
-                        self.state = self.StateType.SEARCHING
-                        self.rs_buffer = None
-                    
+                    if self.rs_buffer.len_parity > 0:
+                        rsc = RSCodec(self.rs_buffer.len_parity, fcr=1)
+                        
+                        try:
+                            logger.debug(f"RS buffer: {self.rs_buffer}")
+                            buf_decoded = rsc.decode(self.rs_buffer.buf, erase_pos=self.rs_buffer.erase_pos)[0]
+                        except:
+                            logger.warning("Failed to decode frame due to too many errors")
+                            self.state = self.StateType.SEARCHING
+                            self.rs_buffer = None
+                            continue
+                    else:
+                        buf_decoded = self.rs_buffer.buf
+
                     if self.state == self.StateType.IN_HEADER:
                         assert len(buf_decoded) == 1
                         payload_decoded_len = buf_decoded[0]
@@ -117,7 +128,7 @@ class Deframer(Transformer):
                             else:
                                 self.rs_buffer = self.RSBuffer(len_target=payload_decoded_len)
 
-                            logger.info(f"Receiving message with length {payload_decoded_len}")
+                            logger.info(f"Receiving a message with length {payload_decoded_len}")
 
                     elif self.state == self.StateType.IN_PAYLOAD:
                         out.append(buf_decoded)
@@ -125,22 +136,6 @@ class Deframer(Transformer):
                         self.rs_buffer = None
 
                         logger.info(f"Received message {buf_decoded}")
-            elif self.state == self.StateType.IN_PAYLOAD and self.format == self.FormatType.RAW_PAYLOAD:
-                if len(self.symbols) < 8:
-                    break
-                symbol, self.symbols = np.packbits(self.symbols[:8], bitorder='little')[0], self.symbols[8:]
-                buf = self.rs_buffer.buf
-                buf.append(symbol)
-                logger.debug(f"Got byte 0x{symbol:02x}")
-
-                if len(buf) == self.rs_buffer.len_target:
-                    out.append(bytes(buf))
-
-                    self.state = self.StateType.SEARCHING
-                    self.rs_buffer = None
-                    logger.info(f"Received raw message {buf}")
-            else:
-                assert False
         
         self.symbols = self.symbols[-Deframer.SYMBOLS_KEEP_LENGTH:]
         return out

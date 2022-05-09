@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument("-r", "--sample-rate", help="Sample rate", default=48000, type=int)
     parser.add_argument("-f", "--carrier-freqs", help="Comma-separated carrier frequencies. Must be a power-of-two", default="3000.0,3200.0", type=str)
     parser.add_argument("--carrier-freq-delta", help="Carrier frequency delta", default=100.0, type=float)
-    parser.add_argument("--frame-format", help="Frame format", choices=["standard", "payload_no_ecc", "payload_no_ecc_lc"], default="standard", type=str)
+    parser.add_argument("--frame-format", help="Frame format", choices=["standard", "raw_payload"], default="standard", type=str)
     parser.add_argument("--block-size", help="Block size", default=4096, type=int)
     args = parser.parse_args()
     return args
