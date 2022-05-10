@@ -5,7 +5,7 @@ import argparse
 import importlib
 import sys
 
-from io import SoundDeviceSource, SoundFileSource
+from audioio import SoundDeviceSource, SoundFileSource
 
 logging.basicConfig(level=logging.INFO)
 
