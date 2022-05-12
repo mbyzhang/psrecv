@@ -7,3 +7,4 @@ from .bitunpacking import BitUnpacking
 from .statscollector import StatisticsCollector
 from .identity import Identity
 from .delay import Delay
+from .diffdecoder import DifferentialDecoder
