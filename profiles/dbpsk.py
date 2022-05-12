@@ -1,10 +1,11 @@
 from typing import List, Literal
 
-from dsp import Sequential
+from dsp import Sequential, DifferentialDecoder
 from dsp.demodulators import DBPSKDemodulator
 from dsp.preprocessing import GeneralPreprocessor
+from dsp.framing import Deframer
+from dsp.cdr import SimpleCDR
 
-from .common import get_cdr_deframer_block
 
 def get_pipeline(
     fs: float,
@@ -15,6 +16,11 @@ def get_pipeline(
     frame_ecc_level: float = 0.2,
 ):
     assert len(carrier_freqs) == 1, "MFSK only supports one carrier frequency"
+
+    frame_format_enum = {
+        "standard": Deframer.FormatType.STANDARD,
+        "raw_payload": Deframer.FormatType.RAW_PAYLOAD,
+    }[frame_format]
 
     return Sequential(
         GeneralPreprocessor(
@@ -30,10 +36,15 @@ def get_pipeline(
             f_delta=carrier_f_delta,
             resampler_up=8,
         ),
-        get_cdr_deframer_block(
+        SimpleCDR(
             sps=sps,
-            cdr_type="simple",
-            frame_format=frame_format,
-            frame_ecc_level=frame_ecc_level,
-        )
+            clk_recovery_window=sps // 4,
+            clk_recovery_grad_threshold=1e-3,
+            median_window_size=int(sps * 0.3)
+        ),
+        DifferentialDecoder(),
+        Deframer(
+            format=frame_format_enum,
+            payload_parity_len_ratio=frame_ecc_level,
+        ),
     )

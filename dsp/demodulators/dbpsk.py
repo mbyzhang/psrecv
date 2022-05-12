@@ -33,8 +33,8 @@ class DBPSKDemodulator(DSPBlock):
             f=f,
             fs=fs_r,
             update_period=int(fs_r / f * 5),
-            alpha=0.6,
-            beta=0.0001,
+            alpha=0.2,
+            beta=1e-7,
             lpf_cutoff=f / 2.0,
             lpf_ntaps=costas_lpf_ntaps,
         )
@@ -48,10 +48,8 @@ class DBPSKDemodulator(DSPBlock):
         carrier_up = self.upsampler(carrier)
         phase_abs_up = self.loop(carrier_up)
         phase_abs = self.decimator(phase_abs_up)
-        phase_rela = phase_abs * self.symbol_delay(phase_abs) * -1.0
 
         self.stat_carrier = carrier
         self.stat_phase_abs = phase_abs
-        self.stat_phase_rela = phase_rela
 
-        return phase_rela
+        return phase_abs
