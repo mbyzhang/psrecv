@@ -9,11 +9,13 @@ def plot_statistics(pipeline, fs: float, baudrate: float, start: float, end: flo
 
     plt.subplot(411)
 
-    for i, x in enumerate(pipeline.cum_data["subcarrier_abs_amp"]):
-        plt.plot(x, label=f"Absolute amplitude of f{i}")
+    if "subcarrier_abs_amp" in pipeline.cum_data:
+        for i, x in enumerate(pipeline.cum_data["subcarrier_abs_amp"]):
+            plt.plot(x, label=f"Absolute amplitude of f{i}")
+
     plt.xlim(start * fs, end * fs)
-    plt.yscale("log")
-    plt.ylim((1e-6, 10.0))
+    # plt.yscale("log")
+    # plt.ylim((1e-6, 10.0))
     plt.grid(True)
     plt.legend()
 
@@ -37,7 +39,7 @@ def plot_statistics(pipeline, fs: float, baudrate: float, start: float, end: flo
             plt.plot(subcarrier_rela_amp_dc_blocked, label="DC-blocked relative amplitude")
 
     plt.xlim(start * fs, end * fs)
-    # plt.ylim((-1.5, 1.5))
+    plt.ylim((-3, 3))
     plt.axhline(y=0.0, color="yellow")
     plt.legend()
     plt.grid(True)
