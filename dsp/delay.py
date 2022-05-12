@@ -2,10 +2,10 @@ from dsp import DSPBlock
 import numpy as np
 
 class Delay(DSPBlock):
-    def __init__(self, n):
+    def __init__(self, n, dtype = float):
         super().__init__()
         self.n = n
-        self.padding = np.zeros(self.n)
+        self.padding = np.zeros(self.n, dtype=dtype)
 
     def __call__(self, data: np.ndarray) -> np.ndarray:
         if self.n == 0:
